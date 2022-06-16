@@ -1,15 +1,12 @@
-
 import glob
 import os
-import string
-import datetime
 import streamlit as st
-import subprocess
 import glob
 import librosa
 from pydub import AudioSegment
 import math
 import shutil
+from pathlib import Path
 
 class SplitWavAudioMubin():
     def __init__(self, folder, filename):
@@ -39,47 +36,48 @@ class SplitWavAudioMubin():
 
 uploaded_file = st.sidebar.file_uploader(label = "Please upload your file ",
 type=['wav', 'mp3'])
-length_audio = librosa.get_duration(filename=uploaded_file.name)/60
 
-# convert to wav
-format_ = uploaded_file.name.split('.')[-1]
-outputname = uploaded_file.name + ".wav"
-sound = AudioSegment.from_file(uploaded_file.name, format= format_)
-sound.export(outputname, format="wav")
+if uploaded_file:
+  Path("./small").mkdir(parents=True, exist_ok=True)
+  length_audio = librosa.get_duration(filename=uploaded_file.name)/60
 
-values = st.sidebar.slider(
-     'Number of Mins',
-     0, 30, 1)
+  # convert to wav
+  format_ = uploaded_file.name.split('.')[-1]
+  outputname = uploaded_file.name + ".wav"
+  sound = AudioSegment.from_file(uploaded_file.name, format= format_)
+  sound.export(outputname, format="wav")
 
-submit_button = st.sidebar.button(label='Submit')
+  values = st.sidebar.slider(
+      'Number of Mins',
+      0, 30, 1)
 
+  submit_button = st.sidebar.button(label='Submit')
 
-st.title("Audio2Many")
-st.write('一共有', round(length_audio, 2) , "分钟")
-st.write('被分成', math.ceil(round(length_audio, 2)/values) , "份")
+  st.title("Audio2Many")
+  st.write('一共有', round(length_audio, 2) , "分钟")
+  st.write('被分成', math.ceil(round(length_audio, 2)/values) , "份")
 
 
 # Main app engine
 if __name__ == "__main__":
-    # display title and description
-    
-    folder = "./"
-    
+
     if submit_button:
 
-      # # remove files
-      # files = glob.glob('./*.wav')
-      # for f in files:
-      #     try:
-      #         f.unlink()
-      #     except OSError as e:
-      #         print("Error: %s : %s" % (f, e.strerror))
-      # genrate data
-      split_wav = SplitWavAudioMubin(folder, uploaded_file.name + ".wav")
-      split_wav.multiple_split(min_per_split=values)
+      # remove files
+      files = glob.glob('small/*.wav')
+      for f in files:
+          try:
+              os.remove(f)
+          except OSError as e:
+              print("Error: %s : %s" % (f, e.strerror))
 
+      # genrate data
+      shutil.move(outputname,"./small/"+outputname)
+      split_wav = SplitWavAudioMubin("./small", outputname)
+      split_wav.multiple_split(min_per_split=values)
+      os.remove("./small/"+outputname)
       # downloadable button
-      shutil.make_archive("小碎片们.zip", 'zip', "./")
+      shutil.make_archive("小碎片们", 'zip', "small")
 
       with open("小碎片们.zip", 'rb') as f:
         st.download_button('Download File', f, file_name="小碎片们.zip")  # Defaults to 'application/octet-stream'
