@@ -35,7 +35,11 @@ class SplitWavAudioMubin():
                 print('All splited successfully')
 
 uploaded_file = st.sidebar.file_uploader(label = "Please upload your file ",
-type=['wav', 'mp3'])
+type=['wav', 'mp3','m4a'])
+values = st.sidebar.slider(
+      'Number of Mins',
+      0, 30, 1)
+submit_button = st.sidebar.button(label='Submit')
 
 if uploaded_file:
   Path("./small").mkdir(parents=True, exist_ok=True)
@@ -46,12 +50,6 @@ if uploaded_file:
   outputname = uploaded_file.name + ".wav"
   sound = AudioSegment.from_file(uploaded_file.name, format= format_)
   sound.export(outputname, format="wav")
-
-  values = st.sidebar.slider(
-      'Number of Mins',
-      0, 30, 1)
-
-  submit_button = st.sidebar.button(label='Submit')
 
   st.title("Audio2Many")
   st.write('一共有', round(length_audio, 2) , "分钟")
