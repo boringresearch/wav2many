@@ -41,14 +41,17 @@ values = st.sidebar.slider(
       0, 30, 1)
 submit_button = st.sidebar.button(label='Submit')
 
-if uploaded_file:
+if uploaded_file is not None:
+  with open(os.path.join("./",uploaded_file.name),"wb") as f:
+    f.write(uploaded_file.getbuffer())
+        
   Path("./small").mkdir(parents=True, exist_ok=True)
   length_audio = librosa.get_duration(filename=uploaded_file.name)/60
 
   # convert to wav
   format_ = uploaded_file.name.split('.')[-1]
   outputname = uploaded_file.name + ".wav"
-  sound = AudioSegment.from_file(uploaded_file.name, format= format_)
+  sound = AudioSegment.from_file(uploaded_file,format=format_)
   sound.export(outputname, format="wav")
 
   st.title("Audio2Many")
@@ -78,4 +81,4 @@ if __name__ == "__main__":
       shutil.make_archive("小碎片们", 'zip', "small")
 
       with open("小碎片们.zip", 'rb') as f:
-        st.download_button('Download File', f, file_name="小碎片们.zip")  # Defaults to 'application/octet-stream'
+        st.download_button('Download File', f, file_name="小碎片们.zip")
